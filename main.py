@@ -17,14 +17,16 @@ t = Thread( target=ctr.update, args=())
 t.daemon = True
 t.start()
 
-
 inputs=[],
-outputs=['user/angle', 'user/throttle', 'user/mode', 'recording', "x_button"],
-while True:
-    outputs = ctr.run_threaded(inputs)
-    print("button status " + str(outputs))
-    time.sleep(0.1)
+# outputs=['user/angle', 'user/throttle', 'user/mode', 'recording', "x_button"],
+# while True:
+#     outputs = ctr.run_threaded(inputs)
+#     print("button status " + str(outputs))
+#     time.sleep(0.1)
 
+def button_pressed():
+    outputs = ctr.run_threaded(inputs)
+    return outputs[4]
 
 ideas = None
 #
@@ -36,39 +38,56 @@ ideas = None
 #     if (manual and button_pressed):
 #         break
 #
-# ########## SELF TEST
-# # reset all positions
-# # centre steering wheel
-# # reset pedals
-# while True:
-#     # does steering work?
-#     # do the acutators work?
+########## SELF TEST
+# reset all positions
+# centre steering wheel
+# reset pedals
+# does steering work?
+# do the acutators work?
 #
-#     # do I need human input to continue?
-#     if conditions:
-#         breaks
-#
+
+while True:
+    if button_pressed():
+        break
+
+ArduinoMap.Default()
+time.sleep(10)
+
 # ########## Startup sequence
 # # Ignition On
 # # engage, wait, and disengage starter
 # # Wait for GPS Lock
-# while True:
-#     if not ignition_initiated:
-#         start_ignition()
-#     ignition_complete = check_ignition()
-#     if ignition_complete:
-#         wait_for_GPS_lock()
+ArduinoMap.updateAuto(1)
+ArduinoMap.convertAll()
+ArduinoMap.sendCommands()
+
+while True:
+    if button_pressed():
+        break
+# AND OFF WE GO
 #
-#
-#
-#     if conditions_are_met:
-#         break
-#
-# # AND OFF WE GO
-#
-# if manual:
+if manual:
+    ArduinoMap.updateGear(5) # Low Gear? P R N D 2 L
+    ArduinoMap.updateAuto(1) #TODO CONFIRM
+    ArduinoMap.convertAll()
+    ArduinoMap.sendCommands()
 #     # relinquish logic to user
-#
+    time.sleep(3)
+
+    while True:
+        controller_status = ctr.run_threaded(inputs)
+        steering = controller_status[0]
+        throtbrake = controller_status[1]
+        if throtbrake > 0.0:
+            throttle = 100*throtbrake
+            brake = 0
+        else:
+            throttle = 0
+            brake = 100*throtbrake
+        ArduinoMap.updateBrake(brake)
+        ArduinoMap.updateThrottle(throttle)
+        ArduinoMap.convertAll()
+        ArduinoMap.sendCommands()
 # else: #AUTOMATIC
 #     while True:
 #         # MAIN LOOP:
