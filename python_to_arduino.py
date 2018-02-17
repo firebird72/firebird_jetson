@@ -14,7 +14,13 @@ class ArduinoMap:
         except:
             print("No Connection")
             quit()
-        self.gearlookup = [90, 120, 385, 489, 800]
+        self.gearlookup = [267, # P
+                           312, # R
+                           367, # N
+                           417, # D
+                           457, # 3
+                           508, # 2
+                           540] # L
 
     def readSerial(self):
         return self.ser.readline()
