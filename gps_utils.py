@@ -39,6 +39,7 @@ class gps_utils:
         return
 
     def waypoint_reached(self):
+        return
         # check if within X meters of next waypoint. NOT NEXT DESTINATION TARGET.
 
 

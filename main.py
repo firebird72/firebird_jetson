@@ -4,7 +4,7 @@ from python_to_arduino import ArduinoMap
 
 ########## TWEAK PARAMS
 
-Ardu = ArduinoMap('/dev/ttyACM0',9600)
+Ardu = ArduinoMap('/dev/ttyACM1',9600)
 #TODO How to read 3 pos switch
 manual = True
 
@@ -23,10 +23,20 @@ inputs=[],
 #     outputs = ctr.run_threaded(inputs)
 #     print("button status " + str(outputs))
 #     time.sleep(0.1)
+button_map = {
+    'a':3,
+    'b':4,
+    'x':5,
+    'y':6,
+    'select':7,
+    'start':8,
+    'tl':9,
+    'tr':10
+}
 
-def button_pressed():
+def start_button_pressed():
     outputs = ctr.run_threaded(inputs)
-    return outputs[4]
+    return outputs[8]
 
 ideas = None
 #
@@ -47,7 +57,7 @@ ideas = None
 #
 
 while True:
-    if button_pressed():
+    if start_button_pressed():
         break
 
 Ardu.Default()
@@ -55,63 +65,25 @@ time.sleep(1)
 #Ardu.updateIgnition(1)
 print("set defaults, Press button to continue")
 
-while True:
-
-    while True:
-        if button_pressed():
-            break
-
-    Ardu.updateGear(0)
-    Ardu.convertAll()
-    Ardu.sendCommands()
-    print("set gear 0")
-
-    while True:
-        if button_pressed():
-            break
-
-
-    Ardu.updateGear(4)
-    Ardu.convertAll()
-    Ardu.sendCommands()
-    print("set gear 4")
-
-
-
-print("Ignition Sent")
-
-while True:
-    print(Ardu.readSerial())
-
-quit()
-
-
-Ardu.Default()
-time.sleep(10)
-
 # ########## Startup sequence
 # # Ignition On
 # # engage, wait, and disengage starter
 # # Wait for GPS Lock
-Ardu.updateAuto(1)
-Ardu.convertAll()
-Ardu.sendCommands()
+# Ardu.updateAuto(0)
+# Ardu.convertAll()
+# Ardu.sendCommands()
 
 while True:
-    if button_pressed():
+    if start_button_pressed():
         break
 # AND OFF WE GO
 #
+print("now entering live mode")
 if manual:
-    Ardu.updateGear(5) # Low Gear? P R N D 2 L
-    Ardu.updateAuto(1) #TODO CONFIRM
-    Ardu.convertAll()
-    Ardu.sendCommands()
-#     # relinquish logic to user
-    time.sleep(3)
 
     while True:
         controller_status = ctr.run_threaded(inputs)
+        print(controller_status)
         steering = controller_status[0]
         throtbrake = controller_status[1]
         if throtbrake > 0.0:
@@ -120,10 +92,21 @@ if manual:
         else:
             throttle = 0
             brake = 100*throtbrake
+        if controller_status[button_map['a']]:
+            Ardu.updateGear(4)
+        elif controller_status[button_map['b']]:
+            Ardu.updateGear(1)
+        elif controller_status[button_map['y']]:
+            Ardu.updateGear(2)
+        if controller_status[button_map['select']]:
+            Ardu.updateKill(1)
+
         Ardu.updateBrake(brake)
         Ardu.updateThrottle(throttle)
         Ardu.convertAll()
         Ardu.sendCommands()
+        time.sleep(0.25)
+
 # else: #AUTOMATIC
 #     while True:
 #         # MAIN LOOP:

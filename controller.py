@@ -204,6 +204,8 @@ class JoystickController(object):
 
         self.angle = 0.0
         self.throttle = 0.0
+        self.right_trigger = 0.0
+        self.left_trigger = 0.0
         self.mode = 'user'
         self.poll_delay = poll_delay
         self.running = True
@@ -213,7 +215,15 @@ class JoystickController(object):
         self.steering_scale = steering_scale
         self.throttle_scale = throttle_scale
         self.recording = False
+        self.a_button_state = False
+        self.b_button_state = False
         self.x_button_state = False
+        self.y_button_state = False
+        self.select_button_state = False
+        self.start_button_state = False
+        self.tl_button_state = False
+        self.tr_button_state = False
+
         self.constant_throttle = False
         self.auto_record_on_throttle = auto_record_on_throttle
         self.dev_fn = dev_fn
@@ -281,7 +291,12 @@ class JoystickController(object):
                 self.throttle = (self.throttle_scale * axis_val * self.max_throttle)
                 #print("throttle", self.throttle)
                 self.on_throttle_changes()
-            
+
+            if axis == 'z': #LT???
+                self.left_trigger = axis_val
+            if axis == 'rz': # RT ???
+                self.right_trigger = axis_val
+
             if button == 'trigger' and button_state == 1:
                 '''
                 switch modes from:
@@ -312,9 +327,46 @@ class JoystickController(object):
 
             if button == 'a':
                 if button_state == 1:
+                    self.a_button_state = True
+                else:
+                    self.a_button_state = False
+
+            if button == 'b':
+                if button_state == 1:
+                    self.b_button_state = True
+                else:
+                    self.b_button_state = False
+            if button == 'x':
+                if button_state == 1:
                     self.x_button_state = True
                 else:
                     self.x_button_state = False
+            if button == 'y':
+                if button_state == 1:
+                    self.y_button_state = True
+                else:
+                    self.y_button_state = False
+            if button == 'start':
+                if button_state == 1:
+                    self.start_button_state = True
+                else:
+                    self.start_button_state = False
+            if button == 'select':
+                if button_state == 1:
+                    self.select_button_state = True
+                else:
+                    self.select_button_state = False
+            if button == 'tl':
+                if button_state == 1:
+                    self.tl_button_state = True
+                else:
+                    self.tl_button_state = False
+
+            if button == 'tr':
+                if button_state == 1:
+                    self.tr_button_state = True
+                else:
+                    self.tr_button_state = False
 
             if button == 'triangle' and button_state == 1:
                 '''
@@ -384,7 +436,19 @@ class JoystickController(object):
 
     def run_threaded(self, img_arr=None):
         self.img_arr = img_arr
-        return self.angle, self.throttle, self.mode, self.recording, self.x_button_state
+        return self.angle, self.throttle, self.mode,\
+               self.a_button_state, \
+               self.b_button_state, \
+               self.x_button_state, \
+               self.y_button_state, \
+               self.select_button_state, \
+               self.start_button_state, \
+               self.tl_button_state, \
+               self.tr_button_state, \
+               self.left_trigger, \
+               self.right_trigger
+
+
 
     def run(self, img_arr=None):
         raise Exception("We expect for this part to be run with the threaded=True argument.")
