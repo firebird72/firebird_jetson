@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 #Notes:
-#
+# Auth: Alerx Zyner
 class cv_targetfinder:
     def __init__(self, init_camera=True, display_windows=False):
         # TUNING PARAMS
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     cv_targetfinder = cv_targetfinder(display_windows=True)
     while (1):
         frame = cv_targetfinder.grab_image()
-        #frame = cv2.imread('dark2.png')
+        #frame = cv2.imread('images/bright2.png')
         yaw = cv_targetfinder.find_target(frame)
         # yaw may be none or a angle from centre, right positive
         k = cv2.waitKey(5) & 0xFF
