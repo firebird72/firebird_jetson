@@ -204,8 +204,8 @@ class JoystickController(object):
 
         self.angle = 0.0
         self.throttle = 0.0
-        self.right_trigger = 0.0
-        self.left_trigger = 0.0
+        self.right_trigger = -1.0
+        self.left_trigger = -1.0
         self.mode = 'user'
         self.poll_delay = poll_delay
         self.running = True

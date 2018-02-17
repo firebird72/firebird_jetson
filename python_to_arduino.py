@@ -7,7 +7,7 @@ class ArduinoMap:
     def __init__(self, COM, baud):
 
         try:
-            self.ser = serial.Serial()
+            self.ser = serial.Serial(timeout=0)
             self.ser.port = COM
             self.ser.baudrate = baud
             self.ser.open()

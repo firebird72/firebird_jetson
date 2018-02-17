@@ -4,7 +4,7 @@ from python_to_arduino import ArduinoMap
 
 ########## TWEAK PARAMS
 
-Ardu = ArduinoMap('/dev/ttyACM1',9600)
+Ardu = ArduinoMap('/dev/ttyACM2',9600)
 #TODO How to read 3 pos switch
 manual = True
 
@@ -31,12 +31,20 @@ button_map = {
     'select':7,
     'start':8,
     'tl':9,
-    'tr':10
+    'tr':10,
+    "lt":11,
+    "rt":12
 }
 
 def start_button_pressed():
     outputs = ctr.run_threaded(inputs)
     return outputs[8]
+
+def flush_serial():
+    while True:
+        return_str = Ardu.readSerial()
+        if len(return_str) == 0:
+            break
 
 ideas = None
 #
@@ -55,15 +63,16 @@ ideas = None
 # does steering work?
 # do the acutators work?
 #
-
+print("Press start to set defaults")
 while True:
+    flush_serial()
     if start_button_pressed():
         break
 
 Ardu.Default()
-time.sleep(1)
+
 #Ardu.updateIgnition(1)
-print("set defaults, Press button to continue")
+print("Defaults set, Press start button to continue")
 
 # ########## Startup sequence
 # # Ignition On
@@ -74,6 +83,7 @@ print("set defaults, Press button to continue")
 # Ardu.sendCommands()
 
 while True:
+    flush_serial()
     if start_button_pressed():
         break
 # AND OFF WE GO
@@ -83,15 +93,18 @@ if manual:
 
     while True:
         controller_status = ctr.run_threaded(inputs)
-        print(controller_status)
-        steering = controller_status[0]
-        throtbrake = controller_status[1]
-        if throtbrake > 0.0:
-            throttle = 100*throtbrake
-            brake = 0
-        else:
-            throttle = 0
-            brake = 100*throtbrake
+        #print(controller_status)
+        steering = 900*controller_status[0]
+        # throtbrake = controller_status[1]
+        # if throtbrake > 0.0:
+        #     throttle = 100*throtbrake
+        #     brake = 0
+        # else:
+        #     throttle = 0
+        #     brake = 100*throtbrake
+        throttle = 100*((controller_status[button_map['rt']]+1)/2)
+        brake = 100*((controller_status[button_map['lt']] + 1) / 2)
+
         if controller_status[button_map['a']]:
             Ardu.updateGear(4)
         elif controller_status[button_map['b']]:
@@ -103,9 +116,12 @@ if manual:
 
         Ardu.updateBrake(brake)
         Ardu.updateThrottle(throttle)
+        Ardu.updateSteering(steering)
         Ardu.convertAll()
         Ardu.sendCommands()
-        time.sleep(0.25)
+        time.sleep(0.1)
+        flush_serial()
+
 
 # else: #AUTOMATIC
 #     while True:
