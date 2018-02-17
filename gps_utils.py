@@ -44,15 +44,20 @@ class gps_utils:
              [-27.855235, 153.151121667]]
         self.waypoint_idx = -1
         self.destination = None
-        self.waypoint = None
+        self.waypoint = self.waypoint_set7[[]]
 
     
     def wait_for_gps_lock(self):
+        count = 1
+        while self.get_gps[0] == False:
+            count += 1
+        return True
 
-        return
 
     def update_waypoint(self):
-        self.waypoint_idx += 1
+        self.waypoint_idx += 1 
+        self.wa
+        deltaLat = self.latitude - 
 
         # This is the waypoint logic where the `destination' is 5 meters past the mark.
         # get current
@@ -61,11 +66,12 @@ class gps_utils:
         return
 
     def waypoint_reached(self):
-        
+        if abs(self.latitude - self.waypoint_set[self.waypoint_idx][0]) < 5 and (self.longitude - self.waypoint_set[self.waypoint_idx][1] )<5 :
+            self.update_waypoint()
         return
         # check if within X meters of next waypoint. NOT NEXT DESTINATION TARGET.
 
-    def get_gps(NUM_SATS_NEEDED=4):
+    def get_gps(self,NUM_SATS_NEEDED=4):
     	msg = ""
     	try:
     		for line in serial_gps.read():
@@ -89,3 +95,9 @@ class gps_utils:
     	except:
     		return False, msg
 
+    def get_lat_long(self):
+        flag,msg =self.get_gps()
+        if flag :
+            self.latitude = msg.latitude
+            self.longitude = msg.longitude
+            # return (msg.latitude,msg.longitude)
