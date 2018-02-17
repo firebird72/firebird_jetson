@@ -27,7 +27,7 @@ cap.set(cv2.CAP_PROP_FPS, 30)
 # white2 = cap.get(cv2.CAP_PROP_XI_AUTO_WB)
 # red = cap.get(cv2.CAP_PROP_WHITE_BALANCE_RED_V)
 
-record_images = True
+record_images = False
 read_camera = True
 
 while (1):
@@ -35,7 +35,7 @@ while (1):
     if read_camera:
         _, frame = cap.read()
     else:
-        frame = cv2.imread(' ')
+        frame = cv2.imread('dark.png')
     if record_images:
         import os
         image_dir = 'images'
@@ -50,10 +50,13 @@ while (1):
         # Convert BGR to HSV
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         # define range of blue color in HSV
-        lower_blue = np.array([5, 150, 100])
-        upper_blue = np.array([20, 255, 255])
+        lower_orange = np.array([5, 150, 100])
+        upper_orange = np.array([20, 255, 255])
+        lower_red = np.array([150, 50, 50])
+        upper_red = np.array([255, 255, 255])
+
         # Threshold the HSV image to get only blue colors
-        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        mask = cv2.inRange(hsv, lower_red, upper_red)
         # Bitwise-AND mask and original image
         res = cv2.bitwise_and(frame, frame, mask=mask)
 
@@ -138,7 +141,7 @@ while (1):
         #cv2.imshow("Keypoints", im_with_keypoints)
         cv2.imshow('mask', mask)
         cv2.imshow('im_with_keypoints', image)
-        cv2.imshow('dl_mask', dl_mask)
+        #cv2.imshow('dl_mask', dl_mask)
         #cv2.imshow('sure_fg', sure_fg)
         k = cv2.waitKey(5) & 0xFF
         if k == 27:
