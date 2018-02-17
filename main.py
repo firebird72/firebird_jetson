@@ -4,7 +4,7 @@ from python_to_arduino import ArduinoMap
 
 ########## TWEAK PARAMS
 
-#Ardu = ArduinoMap.ArduinoMap(99999999,99999999)
+Ardu = ArduinoMap('/dev/ttyACM0',9600)
 #TODO How to read 3 pos switch
 manual = True
 
@@ -50,16 +50,29 @@ while True:
     if button_pressed():
         break
 
-ArduinoMap.Default()
+Ardu.Default()
+time.sleep(1)
+Ardu.updateIgnition(1)
+Ardu.convertAll()
+Ardu.sendCommands()
+print("Ignition Sent")
+
+while True:
+    print(Ardu.readSerial())
+
+quit()
+
+
+Ardu.Default()
 time.sleep(10)
 
 # ########## Startup sequence
 # # Ignition On
 # # engage, wait, and disengage starter
 # # Wait for GPS Lock
-ArduinoMap.updateAuto(1)
-ArduinoMap.convertAll()
-ArduinoMap.sendCommands()
+Ardu.updateAuto(1)
+Ardu.convertAll()
+Ardu.sendCommands()
 
 while True:
     if button_pressed():
@@ -67,10 +80,10 @@ while True:
 # AND OFF WE GO
 #
 if manual:
-    ArduinoMap.updateGear(5) # Low Gear? P R N D 2 L
-    ArduinoMap.updateAuto(1) #TODO CONFIRM
-    ArduinoMap.convertAll()
-    ArduinoMap.sendCommands()
+    Ardu.updateGear(5) # Low Gear? P R N D 2 L
+    Ardu.updateAuto(1) #TODO CONFIRM
+    Ardu.convertAll()
+    Ardu.sendCommands()
 #     # relinquish logic to user
     time.sleep(3)
 
@@ -84,10 +97,10 @@ if manual:
         else:
             throttle = 0
             brake = 100*throtbrake
-        ArduinoMap.updateBrake(brake)
-        ArduinoMap.updateThrottle(throttle)
-        ArduinoMap.convertAll()
-        ArduinoMap.sendCommands()
+        Ardu.updateBrake(brake)
+        Ardu.updateThrottle(throttle)
+        Ardu.convertAll()
+        Ardu.sendCommands()
 # else: #AUTOMATIC
 #     while True:
 #         # MAIN LOOP:
