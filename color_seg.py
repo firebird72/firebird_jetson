@@ -3,57 +3,54 @@ import numpy as np
 import time
 
 #Notes:
-# shape detection https://www.pyimagesearch.com/2016/02/15/determining-object-color-with-opencv/
-# cubic spline,
-# cross track that is perpendicular distance b/w location and cubic spline
-# cascade controller - heading
-#
+# 
+class cv_targetfinder:
+    def __init__(self, init_camera=True, display_windows=False):
+        # TUNING PARAMS
+        self.erode_iterations = 2
+        self.dilate_iterations = 5
+        self.target_size = 100
+        self.heading_scale_factor = (60.0/2) / (1920.0/2)
+        if init_camera:
+            self.cap = cv2.VideoCapture(1)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+            self.cap.set(cv2.CAP_PROP_FPS, 30)
+        # CANNOT GET WHITE BALANCE WORKING IN OPENCVre
+        # IN V4L2UCP set whitebalance auto - off, update color temp
+        # TODO research if I can do this cmd line and just run init calls during setup
 
+        # white = cap.get(cv2.CAP_PROP_XI_AUTO_WB)
+        # cap.set(cv2.CAP_PROP_XI_AUTO_WB,1.0)
+        # white2 = cap.get(cv2.CAP_PROP_XI_AUTO_WB)
+        # red = cap.get(cv2.CAP_PROP_WHITE_BALANCE_RED_V)
 
-#TUNING PARAMS
-erode_iterations = 2
-dilate_iterations = 5
-target_size = 100
+        self.record_images = False
+        self.read_camera = False
+        self.display_windows = display_windows
 
-cap = cv2.VideoCapture(1)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1920)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1080)
-cap.set(cv2.CAP_PROP_FPS, 30)
-# CANNOT GET WHITE BALANCE WORKING IN OPENCVre
-# IN V4L2UCP set whitebalance auto - off, update color temp
-# TODO research if I can do this cmd line and just run init calls during setup
+        return
 
-# white = cap.get(cv2.CAP_PROP_XI_AUTO_WB)
-# cap.set(cv2.CAP_PROP_XI_AUTO_WB,1.0)
-# white2 = cap.get(cv2.CAP_PROP_XI_AUTO_WB)
-# red = cap.get(cv2.CAP_PROP_WHITE_BALANCE_RED_V)
+    def grab_image(self):
+        _, frame = self.cap.read()
+        if self.record_images:
+            import os
+            image_dir = 'images'
+            if not os.path.exists(image_dir):
+                os.makedirs(image_dir)
+            cv2.imwrite(os.path.join(image_dir, str(time.time()) + ".png"), frame)
 
-record_images = False
-read_camera = False
+        return frame
 
-while (1):
-    # Take each frame
-    if read_camera:
-        _, frame = cap.read()
-    else:
-        frame = cv2.imread('dark.png')
-    if record_images:
-        import os
-        image_dir = 'images'
-        if not os.path.exists(image_dir):
-            os.makedirs(image_dir)
-        cv2.imwrite(os.path.join(image_dir,str(time.time()) + ".png"), frame)
-        cv2.imshow('frame', frame)
-        k = cv2.waitKey(5) & 0xFF
-        if k == 27:
-            break
-    else:
+    def find_target(self, frame):
+
+        '''returns yaw, centre zero, positive right. None if no target found'''
         # Convert BGR to HSV
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         # define range of blue color in HSV
         lower_orange = np.array([5, 150, 100])
         upper_orange = np.array([20, 255, 255])
-        lower_red = np.array([150, 50, 50])
+        lower_red = np.array([160, 50, 50])
         upper_red = np.array([255, 255, 255])
 
         # Threshold the HSV image to get only blue colors
@@ -61,9 +58,8 @@ while (1):
         # Bitwise-AND mask and original image
         res = cv2.bitwise_and(frame, frame, mask=mask)
 
-
-        er_mask = cv2.erode(mask, None, iterations=erode_iterations)
-        dl_mask = cv2.dilate(er_mask,None,iterations=dilate_iterations)
+        er_mask = cv2.erode(mask, None, iterations=self.erode_iterations)
+        dl_mask = cv2.dilate(er_mask, None, iterations=self.dilate_iterations)
 
         # load the image, convert it to grayscale, blur it slightly,
         # and threshold it
@@ -84,28 +80,40 @@ while (1):
             # draw the contour and center of the shape on the image
             cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
             cv2.circle(image, (cX, cY), 7, (255, 255, 255), -1)
-            if c.size < target_size:
+            if c.size < self.target_size:
                 cv2.putText(image, "small", (cX - 20, cY - 20),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                target_list.append([c.size,cX])
+                target_list.append([c.size, cX])
             else:
                 cv2.putText(image, "large", (cX - 20, cY - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                 target_list.append([c.size, cX])
+
+        if self.display_windows:
+            cv2.imshow('mask',cv2.resize(mask,dsize=(0,0),fx=0.5,fy=0.5))
+            cv2.imshow('im_with_keypoints', cv2.resize(image,dsize=(0,0),fx=0.5,fy=0.5))
+
         targets = np.array(target_list)
+        if len(targets) == 0:
+            return None
         largest_target = targets.max(axis=0)
         target_x = largest_target[1]
 
         image_width = frame.shape[1]
-        pixel_x_location = target_x - image_width/2
+        pixel_x_location = target_x - image_width / 2
+        yaw_offset = pixel_x_location * self.heading_scale_factor
 
-        # Show keypoints
-        #cv2.imshow("Keypoints", im_with_keypoints)
-        cv2.imshow('mask', mask)
-        cv2.imshow('im_with_keypoints', image)
-        #cv2.imshow('dl_mask', dl_mask)
-        #cv2.imshow('sure_fg', sure_fg)
+        print yaw_offset
+        return yaw_offset
+
+if __name__ == '__main__':
+    # Set display_windows=Flase in prod.
+    cv_targetfinder = cv_targetfinder(display_windows=True)
+    while (1):
+        frame = cv_targetfinder.grab_image()
+        yaw = cv_targetfinder.find_target(frame)
+        # yaw may be none or a angle from centre, right positive
         k = cv2.waitKey(5) & 0xFF
         if k == 27:
             break
-cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
