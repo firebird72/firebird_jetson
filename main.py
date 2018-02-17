@@ -52,9 +52,32 @@ while True:
 
 Ardu.Default()
 time.sleep(1)
-Ardu.updateIgnition(1)
-Ardu.convertAll()
-Ardu.sendCommands()
+#Ardu.updateIgnition(1)
+print("set defaults, Press button to continue")
+
+while True:
+
+    while True:
+        if button_pressed():
+            break
+
+    Ardu.updateGear(0)
+    Ardu.convertAll()
+    Ardu.sendCommands()
+    print("set gear 0")
+
+    while True:
+        if button_pressed():
+            break
+
+
+    Ardu.updateGear(4)
+    Ardu.convertAll()
+    Ardu.sendCommands()
+    print("set gear 4")
+
+
+
 print("Ignition Sent")
 
 while True:
