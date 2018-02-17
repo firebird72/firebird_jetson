@@ -110,7 +110,7 @@ class cv_targetfinder:
         pixel_x_location = target_x - image_width / 2
         yaw_offset = pixel_x_location * self.heading_scale_factor
 
-        print yaw_offset
+        print(yaw_offset)
         return yaw_offset
 
 if __name__ == '__main__':
