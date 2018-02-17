@@ -1,17 +1,19 @@
 
-
+from python_to_arduino import ArduinoMap
 #Main logic for jetson on firebird
 
 ########## TWEAK PARAMS
 
-
-
+Ardu = ArduinoMap.ArduinoMap(99999999,99999999)
+#TODO How to read 3 pos switch
+manual = True
 
 ########## Power On
 while True:
     # Check if all sensors can be read
     # IF MANUAL wait for user input
-    if conditions:
+    check
+    if (manual and button_pressed):
         break
 
 ########## SELF TEST
@@ -54,4 +56,4 @@ else: #AUTOMATIC
         if gps_utils.waypoint_complete():
             gps_utils.set_next_waypoint()
         #Any other status?
-        gps_utils.get
+        if gps_utils.waypoint_reached():
