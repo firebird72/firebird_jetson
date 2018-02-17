@@ -4,7 +4,7 @@ from python_to_arduino import ArduinoMap
 
 ########## TWEAK PARAMS
 
-Ardu = ArduinoMap('/dev/ttyACM2',9600)
+Ardu = ArduinoMap('/dev/ttyACM0',9600)
 #TODO How to read 3 pos switch
 manual = True
 
@@ -73,7 +73,7 @@ Ardu.Default()
 
 #Ardu.updateIgnition(1)
 print("Defaults set, Press start button to continue")
-
+time.sleep(1)
 # ########## Startup sequence
 # # Ignition On
 # # engage, wait, and disengage starter
