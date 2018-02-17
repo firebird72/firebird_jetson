@@ -3,13 +3,13 @@ import numpy as np
 import time
 
 #Notes:
-# 
+#
 class cv_targetfinder:
     def __init__(self, init_camera=True, display_windows=False):
         # TUNING PARAMS
         self.erode_iterations = 2
         self.dilate_iterations = 5
-        self.target_size = 100
+        self.target_size = 300
         self.heading_scale_factor = (60.0/2) / (1920.0/2)
         if init_camera:
             self.cap = cv2.VideoCapture(1)
@@ -25,7 +25,7 @@ class cv_targetfinder:
         # white2 = cap.get(cv2.CAP_PROP_XI_AUTO_WB)
         # red = cap.get(cv2.CAP_PROP_WHITE_BALANCE_RED_V)
 
-        self.record_images = False
+        self.record_images = True
         self.read_camera = False
         self.display_windows = display_windows
 
@@ -48,13 +48,18 @@ class cv_targetfinder:
         # Convert BGR to HSV
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         # define range of blue color in HSV
+        # HUE IS 0 to 180
         lower_orange = np.array([5, 150, 100])
         upper_orange = np.array([20, 255, 255])
-        lower_red = np.array([160, 50, 50])
-        upper_red = np.array([255, 255, 255])
+        low_lower_red = np.array([0, 100, 70])
+        low_upper_red = np.array([5, 150, 150])
+        high_lower_red = np.array([160, 100, 30])
+        high_upper_red = np.array([180, 255, 255])
 
         # Threshold the HSV image to get only blue colors
-        mask = cv2.inRange(hsv, lower_red, upper_red)
+        lmask = cv2.inRange(hsv, low_lower_red, low_upper_red)
+        hmask = cv2.inRange(hsv, high_lower_red, high_upper_red)
+        mask = cv2.bitwise_or(lmask,hmask)
         # Bitwise-AND mask and original image
         res = cv2.bitwise_and(frame, frame, mask=mask)
 
@@ -83,20 +88,22 @@ class cv_targetfinder:
             if c.size < self.target_size:
                 cv2.putText(image, "small", (cX - 20, cY - 20),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                target_list.append([c.size, cX])
             else:
                 cv2.putText(image, "large", (cX - 20, cY - 20),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                 target_list.append([c.size, cX])
 
         if self.display_windows:
-            cv2.imshow('mask',cv2.resize(mask,dsize=(0,0),fx=0.5,fy=0.5))
             cv2.imshow('im_with_keypoints', cv2.resize(image,dsize=(0,0),fx=0.5,fy=0.5))
-
+            cv2.imshow('mask', cv2.resize(mask, dsize=(0, 0), fx=0.5, fy=0.5))
         targets = np.array(target_list)
         if len(targets) == 0:
             return None
-        largest_target = targets.max(axis=0)
+        target_idx = np.argmax(targets,axis=0)
+        if len(target_idx) > 1:
+            target_idx = target_idx[0]
+        largest_target = targets[target_idx]
+        #largest_target = targets.max(axis=0)
         target_x = largest_target[1]
 
         image_width = frame.shape[1]
@@ -111,6 +118,7 @@ if __name__ == '__main__':
     cv_targetfinder = cv_targetfinder(display_windows=True)
     while (1):
         frame = cv_targetfinder.grab_image()
+        #frame = cv2.imread('dark2.png')
         yaw = cv_targetfinder.find_target(frame)
         # yaw may be none or a angle from centre, right positive
         k = cv2.waitKey(5) & 0xFF
