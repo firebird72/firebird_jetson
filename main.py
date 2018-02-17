@@ -1,44 +1,47 @@
-import time
-from python_to_arduino import ArduinoMap
-#Main logic for jetson on firebird
-
-########## TWEAK PARAMS
-
-Ardu = ArduinoMap('/dev/ttyACM0',9600)
-#TODO How to read 3 pos switch
-manual = True
-
 from threading import Thread
 from controller import JoystickController
 
-ctr = JoystickController( auto_record_on_throttle=False)
+import time
+from python_to_arduino import ArduinoMap
+# Main logic for jetson on firebird
 
-t = Thread( target=ctr.update, args=())
+# ######### TWEAK PARAMS
+
+Ardu = ArduinoMap('/dev/ttyACM0', 9600)
+# TODO How to read 3 pos switch
+manual = True
+
+ctr = JoystickController(auto_record_on_throttle=False)
+
+t = Thread(target=ctr.update, args=())
 t.daemon = True
 t.start()
 
-inputs=[],
+inputs = [],
+
 # outputs=['user/angle', 'user/throttle', 'user/mode', 'recording', "x_button"],
 # while True:
 #     outputs = ctr.run_threaded(inputs)
 #     print("button status " + str(outputs))
 #     time.sleep(0.1)
 button_map = {
-    'a':3,
-    'b':4,
-    'x':5,
-    'y':6,
-    'select':7,
-    'start':8,
-    'tl':9,
-    'tr':10,
-    "lt":11,
-    "rt":12
+    'a': 3,
+    'b': 4,
+    'x': 5,
+    'y': 6,
+    'select': 7,
+    'start': 8,
+    'tl': 9,
+    'tr': 10,
+    "lt": 11,
+    "rt": 12
 }
+
 
 def start_button_pressed():
     outputs = ctr.run_threaded(inputs)
     return outputs[8]
+
 
 def flush_serial():
     while True:
@@ -46,7 +49,9 @@ def flush_serial():
         if len(return_str) == 0:
             break
 
+
 ideas = None
+
 #
 # ########## Power On
 # while True:
@@ -56,13 +61,14 @@ ideas = None
 #     if (manual and button_pressed):
 #         break
 #
-########## SELF TEST
+# ######### SELF TEST
 # reset all positions
 # centre steering wheel
 # reset pedals
 # does steering work?
 # do the acutators work?
 #
+
 print("Press start to set defaults")
 while True:
     flush_serial()
@@ -71,7 +77,8 @@ while True:
 
 Ardu.Default()
 
-#Ardu.updateIgnition(1)
+# Ardu.updateIgnition(1)
+
 print("Defaults set, Press start button to continue")
 time.sleep(1)
 # ########## Startup sequence
@@ -93,8 +100,8 @@ if manual:
 
     while True:
         controller_status = ctr.run_threaded(inputs)
-        #print(controller_status)
-        steering = 900*controller_status[0]
+        # print(controller_status)
+        steering = 900 * controller_status[0]
         # throtbrake = controller_status[1]
         # if throtbrake > 0.0:
         #     throttle = 100*throtbrake
@@ -102,8 +109,11 @@ if manual:
         # else:
         #     throttle = 0
         #     brake = 100*throtbrake
-        throttle = 100*((controller_status[button_map['rt']]+1)/2)
-        brake = 100*((controller_status[button_map['lt']] + 1) / 2)
+        throttle = ((controller_status[button_map['rt']] + 1) / 2)
+        brake = ((controller_status[button_map['lt']] + 1) / 2)
+
+        print(brake)
+        print(throttle)
 
         if controller_status[button_map['a']]:
             Ardu.updateGear(4)
