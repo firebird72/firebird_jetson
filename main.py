@@ -101,7 +101,7 @@ if manual:
     while True:
         controller_status = ctr.run_threaded(inputs)
         # print(controller_status)
-        steering = 900 * controller_status[0]
+        steering = 90 + 30 * controller_status[0]
         # throtbrake = controller_status[1]
         # if throtbrake > 0.0:
         #     throttle = 100*throtbrake
@@ -114,6 +114,7 @@ if manual:
 
         print(brake)
         print(throttle)
+        print(steering)
 
         if controller_status[button_map['a']]:
             Ardu.updateGear(4)

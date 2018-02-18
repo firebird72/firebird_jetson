@@ -27,7 +27,7 @@ class ArduinoMap:
 
     def updateSteering(self, newSteer):
         """updates steering angle ( between -900 and 900 )"""
-        self.steering = np.clip(newSteer, -900, 900)
+        self.steering = np.clip(newSteer, 60, 120)
 
     def updateBrake(self, newBrake):
         """ updates braking percentage"""
@@ -35,7 +35,7 @@ class ArduinoMap:
 
     def updateThrottle(self, newThrottle):
         """updates throttle as a percentage"""
-        self.throttle = np.clip(newThrottle, 0, 100)
+        self.throttle = np.clip(newThrottle, 0, 90)
 
     def updateGear(self, newGear):
         """udates gear as a 0 indexed integer """
@@ -64,9 +64,9 @@ class ArduinoMap:
         self.kill = np.clip(newKill, 0, 1)
 
     def convertAll(self):
-        self.steeringArdu = np.clip(int((self.steering / 900) * 512 + 512), 0, 1023)
+        self.steeringArdu = np.clip(int(self.steering), 60, 120)
         self.brakeArdu = np.clip(int(self.brake * 512), 0, 1023)
-        self.throttleArdu = np.clip(int(self.throttle * 512), 0, 1023)
+        self.throttleArdu = np.clip(int(90 - 90 * self.throttle), 0, 90)
         self.gearArdu = self.gearlookup[self.gear]
         self.checksum = self.steeringArdu + self.brakeArdu + self.throttleArdu + self.gearArdu
 
