@@ -31,7 +31,7 @@ class ArduinoMap:
 
     def updateBrake(self, newBrake):
         """ updates braking percentage"""
-        self.brake = np.clip(newBrake, 0, 100)
+        self.brake = np.clip(newBrake, 0.0, 1.0)
 
     def updateThrottle(self, newThrottle):
         """updates throttle as a percentage"""
@@ -65,7 +65,7 @@ class ArduinoMap:
 
     def convertAll(self):
         self.steeringArdu = np.clip(int(self.steering), 60, 120)
-        self.brakeArdu = np.clip(int(self.brake * 512), 0, 1023)
+        self.brakeArdu = np.clip(int(385 + self.brake * (550-385)), 385, 550)
         self.throttleArdu = np.clip(int(90 - 90 * self.throttle), 0, 90)
         self.gearArdu = self.gearlookup[self.gear]
         self.checksum = self.steeringArdu + self.brakeArdu + self.throttleArdu + self.gearArdu
