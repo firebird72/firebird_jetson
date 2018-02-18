@@ -24,7 +24,7 @@ def getCommands(self):
     self.auto = string[16]
     self.ignition = string[17]
     self.kill = string[18]
-    self.checksum = string[18:23]
+    self.checksum = string[19:23]
 
     print("SteeringJetson: " + steeringJetson)
 
