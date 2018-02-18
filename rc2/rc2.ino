@@ -9,10 +9,11 @@ void setup() {
  
 void loop() {
   pwm_value = pulseIn(PWM_PIN, HIGH);
-  Serial.println(pwm_value);
+//  Serial.println(pwm_value);
   
   if(pwm_value < 1200) {
-  // kill
-  Serial.println("KILL");
-}
+
+// Serial.println("KILL");
+ Serial.println("00000000000000000010000");
+  }
 }
