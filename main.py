@@ -76,10 +76,18 @@ while True:
         break
 
 Ardu.Default()
+time.sleep(5)
 
-# Ardu.updateIgnition(1)
+print("Press start to run ignition")
+while True:
+    flush_serial()
+    if start_button_pressed():
+        break
+Ardu.updateIgnition(1)
+Ardu.convertAll()
+Ardu.sendCommands()
 
-print("Defaults set, Press start button to continue")
+print("Engine on, Press start button to continue")
 time.sleep(1)
 # ########## Startup sequence
 # # Ignition On
